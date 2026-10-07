@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Odoo Hide Apps",
+  "version": "2.3",
+  "description": "Pick which Odoo apps show on the home screen.",
+  "icons": { "128": "icon.png" },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "odoo-hide@digisoolut.co",
+      "update_url": "https://raw.githubusercontent.com/pyvnoaim/odoo-hide/main/updates.json",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": ["storage"],
+  "action": { "default_title": "Odoo apps", "default_popup": "popup.html" },
+  "content_scripts": [{ "matches": ["https://datadiorama.digisoolut.co/*", "https://servicedesk.datadiorama.com/*"], "js": ["nav.js", "content.js"] }]
+}
