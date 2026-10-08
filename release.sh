@@ -1,10 +1,11 @@
 #!/bin/sh
 # ./release.sh ship [version]     -> bump (optional), sign at addons.mozilla.org, GitHub release + updates.json, push
-#                                    needs WEB_EXT_API_KEY / WEB_EXT_API_SECRET (addons.mozilla.org/developers/addon/api/key/)
+#                                    needs WEB_EXT_API_KEY / WEB_EXT_API_SECRET in .env (addons.mozilla.org/developers/addon/api/key/)
 # ./release.sh build              -> ../odoo-hide-<version>.zip, for a manual upload to addons.mozilla.org (and Chrome)
 # ./release.sh publish <signed>   -> GitHub release + updates.json entry for an .xpi signed by hand
 set -e
 cd "$(dirname "$0")"
+[ -f .env ] && set -a && . ./.env && set +a # git-ignored AMO keys
 version() { python3 -c "import json; print(json.load(open('src/manifest.json'))['version'])"; }
 v=$(version)
 
@@ -26,7 +27,7 @@ PY
 
 case "$1" in
   ship)
-    [ -n "$WEB_EXT_API_KEY" ] && [ -n "$WEB_EXT_API_SECRET" ] || { echo "set WEB_EXT_API_KEY and WEB_EXT_API_SECRET"; exit 1; }
+    [ -n "$WEB_EXT_API_KEY" ] && [ -n "$WEB_EXT_API_SECRET" ] || { echo "put WEB_EXT_API_KEY and WEB_EXT_API_SECRET in .env"; exit 1; }
     [ -z "$(git status --porcelain)" ] || { echo "commit or stash your changes first"; exit 1; }
     if [ -n "$2" ]; then
       sed -i '' "s/\"version\": \"$v\"/\"version\": \"$2\"/" src/manifest.json

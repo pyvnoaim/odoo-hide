@@ -18,7 +18,12 @@ Works on `datadiorama.digisoolut.co` and `servicedesk.datadiorama.com`. Your cho
 
 ## Release (maintainer)
 
-One-time: create API credentials at [addons.mozilla.org/developers/addon/api/key](https://addons.mozilla.org/developers/addon/api/key/) and export them as `WEB_EXT_API_KEY` / `WEB_EXT_API_SECRET`.
+One-time: create API credentials at [addons.mozilla.org/developers/addon/api/key](https://addons.mozilla.org/developers/addon/api/key/) and put them in `.env` (git-ignored):
+
+```sh
+WEB_EXT_API_KEY='user:…'
+WEB_EXT_API_SECRET='…'
+```
 
 `./release.sh ship 2.6` bumps the version, gets it signed by Mozilla, creates the GitHub release and updates `updates.json`. Installed copies update within a day.
 
