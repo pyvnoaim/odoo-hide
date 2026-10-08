@@ -1,14 +1,19 @@
 const $ = id => document.getElementById(id);
 
-// Firefox checks updates.json about once a day; opening the popup checks now and offers the update
-$('version').textContent = 'v' + chrome.runtime.getManifest().version;
-chrome.runtime.onUpdateAvailable.addListener(() => {}); // hold the update while the popup is open, the button applies it
-(globalThis.browser ?? chrome).runtime.requestUpdateCheck().then(({ status, version }) => {
-  if (status !== 'update_available') return;
-  $('update').textContent = `Update to v${version}`;
-  $('update').hidden = false;
-}, () => {}); // e.g. a temporary install without update_url: just no button
-$('update').onclick = () => chrome.runtime.reload();
+// Firefox only checks updates.json about once a day and has no runtime.requestUpdateCheck, so the popup
+// looks itself and links the newer signed build; opening that .xpi in Firefox installs the update.
+const current = chrome.runtime.getManifest().version;
+$('version').textContent = 'v' + current;
+fetch('https://raw.githubusercontent.com/pyvnoaim/odoo-hide/main/updates.json')
+  .then(r => r.json())
+  .then(d => {
+    const latest = d.addons[chrome.runtime.id].updates.at(-1);
+    if (latest.version.localeCompare(current, undefined, { numeric: true }) <= 0) return;
+    $('update').textContent = `Update to v${latest.version}`;
+    $('update').href = latest.update_link;
+    $('update').hidden = false;
+  })
+  .catch(() => {}); // offline: no notice
 
 chrome.storage.local.get(['apps', 'hidden', 'order'], ({ apps = [], hidden = [], order = [] }) => {
   if (!apps.length) return;

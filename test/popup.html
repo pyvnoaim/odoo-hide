@@ -1,25 +1,24 @@
 <!doctype html>
 <!-- Open in a browser (or: chrome --headless --dump-dom file://.../test/popup.html), expect "PASS". -->
 <meta charset="utf-8">
-<header><span id="version"></span><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><button id="update" hidden></button></header>
+<header><span id="version"></span><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><a id="update" hidden></a></header>
 <div id="grid"></div>
 <p id="empty"></p>
 <pre id="out"></pre>
 <script>
+  onerror = m => { out.textContent = 'FAIL\n' + m; }; // a crash is a failure, not a blank result
   const store = { apps: [['a', 'A'], ['b', 'B'], ['c', 'C']], hidden: ['b'], order: ['c'] };
-  let reloaded = false;
+  // Only what Firefox really has: no runtime.requestUpdateCheck (calling it broke the 2.5 popup)
   window.chrome = {
     storage: { local: {
       get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in store).map(k => [k, store[k]]))),
       set: o => Object.assign(store, structuredClone(o)),
     } },
-    runtime: {
-      getManifest: () => ({ version: '2.5' }),
-      requestUpdateCheck: async () => ({ status: 'update_available', version: '2.6' }),
-      onUpdateAvailable: { addListener() {} },
-      reload: () => (reloaded = true),
-    },
+    runtime: { id: 'odoo-hide@digisoolut.co', getManifest: () => ({ version: '2.9' }) },
   };
+  // updates.json with a newer version; numeric compare, so 2.10 > 2.9
+  window.fetch = async () => ({ json: async () => ({ addons: { 'odoo-hide@digisoolut.co': { updates: [
+    { version: '2.9', update_link: 'https://x/v2.9.xpi' }, { version: '2.10', update_link: 'https://x/v2.10.xpi' }] } } }) });
 </script>
 <script src="../src/popup.js"></script>
 <script>
@@ -49,11 +48,9 @@
   reset.click();
   check('reset order', [ids(), store.order], [['a', 'b', 'c'], []]);
 
-  check('version shown', version.textContent, 'v2.5');
-  setTimeout(() => { // after the update check resolves
-    check('update offered', [update.hidden, update.textContent], [false, 'Update to v2.6']);
-    update.click();
-    check('update applies', reloaded, true);
+  check('version shown', version.textContent, 'v2.9');
+  setTimeout(() => { // after the updates.json fetch resolves
+    check('update offered', [update.hidden, update.textContent, update.href], [false, 'Update to v2.10', 'https://x/v2.10.xpi']);
     out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
   });
 </script>

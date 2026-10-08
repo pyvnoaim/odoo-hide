@@ -13,6 +13,7 @@
 </div>
 <pre id="out"></pre>
 <script>
+  onerror = m => { out.textContent = 'FAIL\n' + m; }; // a crash is a failure, not a blank result
   const store = { hidden: ['b'], order: ['d', 'c'] };
   const listeners = [];
   window.chrome = { storage: {

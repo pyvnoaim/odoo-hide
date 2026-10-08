@@ -7,8 +7,9 @@
   header { display:flex; align-items:center; gap:8px; padding:12px 14px 8px; }
   h1 { font-size:14px; margin:0; flex:1; }
   #count, #version { color:var(--muted); font-weight:400; }
+  #update { color:var(--accent); font-weight:600; text-decoration:none; }
   button { border:0; background:none; color:var(--accent); font:inherit; font-weight:600; cursor:pointer; padding:0; }
-  @media (prefers-color-scheme: dark) { button { color:#c39bb9; } }
+  @media (prefers-color-scheme: dark) { button, #update { color:#c39bb9; } }
   #grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:2px; padding:4px 8px 12px; }
   .app { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 2px; border-radius:10px; cursor:pointer; transition:opacity .15s, filter .15s; }
   .app:hover, .app:focus-visible { background:var(--hover); }
@@ -19,7 +20,7 @@
   .app.off { opacity:.35; filter:grayscale(1); }
   .empty { padding:0 14px 14px; color:var(--muted); margin:0; }
 </style>
-<header><h1>Odoo apps <span id="version"></span></h1><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><button id="update" hidden></button></header>
+<header><h1>Odoo apps <span id="version"></span></h1><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><a id="update" target="_blank" hidden></a></header>
 <div id="grid"></div>
 <p class="empty" id="empty">Open the Odoo home screen once, then reopen this.</p>
 <script src="popup.js"></script>
