@@ -1,6 +1,6 @@
-// node nav.test.js
+// node test/nav.test.js
 const assert = require('assert');
-const step = require('./nav.js');
+const step = require('../src/nav.js');
 
 // 7 tiles, 3 per row:  0 1 2 / 3 4 5 / 6
 assert.equal(step(-1, 'ArrowDown', 7, 3), 0);  // nothing focused -> first tile

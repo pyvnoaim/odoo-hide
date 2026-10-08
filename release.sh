@@ -3,12 +3,12 @@
 # ./release.sh publish <signed>  -> GitHub release + updates.json entry, Firefox/Zen users update within a day
 set -e
 cd "$(dirname "$0")"
-v=$(python3 -c "import json; print(json.load(open('manifest.json'))['version'])")
+v=$(python3 -c "import json; print(json.load(open('src/manifest.json'))['version'])")
 
 case "$1" in
   build)
     rm -f "../odoo-hide-$v.zip"
-    zip -q "../odoo-hide-$v.zip" manifest.json nav.js content.js popup.html popup.js icon.png
+    (cd src && zip -qr "../../odoo-hide-$v.zip" . -x '.*' icon.svg)
     echo "built ../odoo-hide-$v.zip" ;;
   publish)
     [ -f "$2" ] || { echo "usage: ./release.sh publish path/to/signed.xpi"; exit 1; }

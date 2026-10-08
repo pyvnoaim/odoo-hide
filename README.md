@@ -12,12 +12,12 @@ Hide the Odoo apps you don't use from the home screen.
 
 1. Open the Odoo home screen once, so the extension can read your app list.
 2. Click the extension's icon in the toolbar (in Zen it may sit under the puzzle icon; right-click it there → **Pin to Toolbar**).
-3. Click an app to hide it; click it again to bring it back. **Show all** restores everything.
+3. Click an app to hide it; click it again to bring it back. Drag apps to reorder them. **Show all** and **Reset order** undo each.
 
 Works on `datadiorama.digisoolut.co` and `servicedesk.datadiorama.com`. Your choice is saved per browser.
 
 ## Release (maintainer)
 
-1. Bump `"version"` in `manifest.json`, run `./release.sh build`.
+1. Bump `"version"` in `src/manifest.json`, run `./release.sh build`.
 2. Upload the zip at addons.mozilla.org (Upload a New Version), install the signed build.
 3. `./release.sh publish <signed .xpi>`

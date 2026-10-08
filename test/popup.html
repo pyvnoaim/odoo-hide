@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Open in a browser (or: chrome --headless --dump-dom file://.../test/popup.html), expect "PASS". -->
+<meta charset="utf-8">
+<header><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button></header>
+<div id="grid"></div>
+<p id="empty"></p>
+<pre id="out"></pre>
+<script>
+  const store = { apps: [['a', 'A'], ['b', 'B'], ['c', 'C']], hidden: ['b'], order: ['c'] };
+  window.chrome = { storage: { local: {
+    get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in store).map(k => [k, store[k]]))),
+    set: o => Object.assign(store, structuredClone(o)),
+  } } };
+</script>
+<script src="../src/popup.js"></script>
+<script>
+  const fails = [];
+  const check = (name, got, want) => JSON.stringify(got) !== JSON.stringify(want) && fails.push(`${name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+  const ids = () => [...grid.children].map(t => t.dataset.id);
+  const tile = id => grid.querySelector(`[data-id="${id}"]`);
+
+  check('initial order (unordered first, like content.js)', ids(), ['a', 'b', 'c']);
+  check('hidden marked', tile('b').ariaPressed, 'false');
+
+  tile('a').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+  check('Enter hides', store.hidden, ['b', 'a']);
+  tile('a').dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+  check('Space shows', store.hidden, ['b']);
+
+  // Drag c onto a: c moves before a, order saved on dragend
+  const drag = (type, el) => el.dispatchEvent(new DragEvent(type, { dataTransfer: new DataTransfer(), bubbles: true, cancelable: true }));
+  drag('dragstart', tile('c'));
+  drag('dragover', tile('a'));
+  check('drop handled', drag('drop', tile('a')), false); // dispatchEvent returns false when default prevented
+  drag('dragend', tile('c'));
+  check('drag reorders', store.order, ['c', 'a', 'b']);
+
+  all.click();
+  check('show all', store.hidden, []);
+  reset.click();
+  check('reset order', [ids(), store.order], [['a', 'b', 'c'], []]);
+
+  out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
+</script>

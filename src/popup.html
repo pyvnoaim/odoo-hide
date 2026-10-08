@@ -11,13 +11,15 @@
   @media (prefers-color-scheme: dark) { button { color:#c39bb9; } }
   #grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:2px; padding:4px 8px 12px; }
   .app { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 2px; border-radius:10px; cursor:pointer; transition:opacity .15s, filter .15s; }
-  .app:hover { background:var(--hover); }
+  .app:hover, .app:focus-visible { background:var(--hover); }
+  .app:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .app.dragging { opacity:.5; }
   .app img { width:36px; height:36px; border-radius:8px; }
   .app span { font-size:11px; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .app.off { opacity:.35; filter:grayscale(1); }
-  .empty { padding:0 14px 14px; color:var(--muted); }
+  .empty { padding:0 14px 14px; color:var(--muted); margin:0; }
 </style>
-<header><h1>Odoo apps</h1><span id="count"></span><button id="all" hidden>Show all</button></header>
+<header><h1>Odoo apps</h1><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button></header>
 <div id="grid"></div>
 <p class="empty" id="empty">Open the Odoo home screen once, then reopen this.</p>
 <script src="popup.js"></script>

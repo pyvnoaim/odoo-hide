@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Open in a browser (or: chrome --headless --dump-dom file://.../test/content.html), expect "PASS". -->
+<meta charset="utf-8">
+<style>.o_apps { display:flex; flex-wrap:wrap; width:300px } .o_app, .o_apps > div { display:block; width:100px; height:50px }</style>
+<!-- Odoo <=16: tiles are direct children. Odoo 17+: each tile is wrapped in a grid cell. -->
+<div class="o_apps" id="flat">
+  <a class="o_app" href="#" data-menu-xmlid="a">A</a><a class="o_app" href="#" data-menu-xmlid="b">B</a>
+  <a class="o_app" href="#" data-menu-xmlid="c">C</a><a class="o_app" href="#" data-menu-xmlid="d">D</a>
+</div>
+<div class="o_apps" id="wrapped">
+  <div><a class="o_app" href="#" data-menu-xmlid="a">A</a></div><div><a class="o_app" href="#" data-menu-xmlid="b">B</a></div>
+  <div><a class="o_app" href="#" data-menu-xmlid="c">C</a></div><div><a class="o_app" href="#" data-menu-xmlid="d">D</a></div>
+</div>
+<pre id="out"></pre>
+<script>
+  const store = { hidden: ['b'], order: ['d', 'c'] };
+  const listeners = [];
+  window.chrome = { storage: {
+    local: {
+      get: (keys, cb) => cb(Object.fromEntries([keys].flat().filter(k => k in store).map(k => [k, store[k]]))),
+      set: (o, cb) => { Object.assign(store, o); listeners.forEach(l => l(Object.fromEntries(Object.keys(o).map(k => [k, { newValue: o[k] }])))); cb?.(); },
+    },
+    onChanged: { addListener: l => listeners.push(l) },
+  } };
+</script>
+<script src="../src/nav.js"></script>
+<script src="../src/content.js"></script>
+<script>
+  const fails = [];
+  const check = (name, got, want) => JSON.stringify(got) !== JSON.stringify(want) && fails.push(`${name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+  // Visible ids in screen order
+  const seen = root => [...root.querySelectorAll('.o_app')].filter(t => t.offsetParent)
+    .sort((x, y) => x.getBoundingClientRect().top - y.getBoundingClientRect().top || x.getBoundingClientRect().left - y.getBoundingClientRect().left)
+    .map(t => t.dataset.menuXmlid);
+
+  // Unordered apps (a) first, then the order list; b hidden
+  check('flat', seen(flat), ['a', 'd', 'c']);
+  check('wrapped', seen(wrapped), ['a', 'd', 'c']);
+  check('wrapper hidden too', getComputedStyle(wrapped.children[1]).display, 'none');
+
+  // Arrow keys follow screen order, not DOM order
+  const key = k => dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+  flat.querySelector('[data-menu-xmlid="a"]').focus();
+  key('ArrowRight');
+  check('arrow right', document.activeElement.dataset.menuXmlid, 'd');
+
+  // Storage changes re-apply live
+  chrome.storage.local.set({ hidden: [], order: [] });
+  check('reset', seen(flat), ['a', 'b', 'c', 'd']);
+
+  out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
+</script>
