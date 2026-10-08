@@ -24,14 +24,22 @@
   } };
 </script>
 <script src="../src/nav.js"></script>
-<script src="../src/content.js"></script>
 <script>
+  // Injected after parsing, like into an already-open tab after an update: no DOM change follows
+  const s = document.body.appendChild(document.createElement('script'));
+  s.src = '../src/content.js';
+  s.onload = run;
+
+function run() {
   const fails = [];
   const check = (name, got, want) => JSON.stringify(got) !== JSON.stringify(want) && fails.push(`${name}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
   // Visible ids in screen order
   const seen = root => [...root.querySelectorAll('.o_app')].filter(t => t.offsetParent)
     .sort((x, y) => x.getBoundingClientRect().top - y.getBoundingClientRect().top || x.getBoundingClientRect().left - y.getBoundingClientRect().left)
     .map(t => t.dataset.menuXmlid);
+
+  // App list cached for the popup without waiting for a DOM change (already-open tab after an update)
+  check('apps cached on load', store.apps?.map(a => a[0]), ['a', 'b', 'c', 'd', 'a', 'b', 'c', 'd']);
 
   // Unordered apps (a) first, then the order list; b hidden
   check('flat', seen(flat), ['a', 'd', 'c']);
@@ -49,4 +57,5 @@
   check('reset', seen(flat), ['a', 'b', 'c', 'd']);
 
   out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
+}
 </script>

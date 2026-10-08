@@ -18,14 +18,17 @@ const load = () => chrome.storage.local.get(['hidden', 'order'], apply);
 load();
 chrome.storage.onChanged.addListener(c => (c.hidden || c.order) && load());
 
-// Remember the app list for the popup (hidden tiles stay in the DOM, so the list stays complete)
+// Remember the app list for the popup (hidden tiles stay in the DOM, so the list stays complete).
+// Read once now too: after an install/update the script lands in already-open tabs, where nothing mutates.
 let last = '';
-new MutationObserver(() => {
+const scan = () => {
   const apps = [...document.querySelectorAll('.o_app[data-menu-xmlid]')]
     .map(a => [a.dataset.menuXmlid, a.textContent.trim(), a.querySelector('img')?.src]);
   const json = JSON.stringify(apps);
   if (apps.length && json !== last) chrome.storage.local.set({ apps }, () => (last = json));
-}).observe(document.documentElement, { childList: true, subtree: true });
+};
+scan();
+new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
 
 // Odoo's own arrow-key navigation walks over hidden tiles and follows DOM order, not the CSS order,
 // so while anything is hidden or reordered we take over arrows + Enter and move focus between visible tiles.
