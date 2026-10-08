@@ -13,6 +13,10 @@
         {
           "version": "2.6",
           "update_link": "https://github.com/pyvnoaim/odoo-hide/releases/download/v2.6/odoo-hide.xpi"
+        },
+        {
+          "version": "2.7",
+          "update_link": "https://github.com/pyvnoaim/odoo-hide/releases/download/v2.7/odoo-hide.xpi"
         }
       ]
     }
