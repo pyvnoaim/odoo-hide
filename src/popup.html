@@ -6,7 +6,7 @@
   body { margin:0; width:560px; font:13px -apple-system, system-ui, sans-serif; background:var(--bg); color:var(--fg); }
   header { display:flex; align-items:center; gap:8px; padding:12px 14px 8px; }
   h1 { font-size:14px; margin:0; flex:1; }
-  #count { color:var(--muted); }
+  #count, #version { color:var(--muted); font-weight:400; }
   button { border:0; background:none; color:var(--accent); font:inherit; font-weight:600; cursor:pointer; padding:0; }
   @media (prefers-color-scheme: dark) { button { color:#c39bb9; } }
   #grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:2px; padding:4px 8px 12px; }
@@ -19,7 +19,7 @@
   .app.off { opacity:.35; filter:grayscale(1); }
   .empty { padding:0 14px 14px; color:var(--muted); margin:0; }
 </style>
-<header><h1>Odoo apps</h1><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button></header>
+<header><h1>Odoo apps <span id="version"></span></h1><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><button id="update" hidden></button></header>
 <div id="grid"></div>
 <p class="empty" id="empty">Open the Odoo home screen once, then reopen this.</p>
 <script src="popup.js"></script>

@@ -1,5 +1,15 @@
 const $ = id => document.getElementById(id);
 
+// Firefox checks updates.json about once a day; opening the popup checks now and offers the update
+$('version').textContent = 'v' + chrome.runtime.getManifest().version;
+chrome.runtime.onUpdateAvailable.addListener(() => {}); // hold the update while the popup is open, the button applies it
+(globalThis.browser ?? chrome).runtime.requestUpdateCheck().then(({ status, version }) => {
+  if (status !== 'update_available') return;
+  $('update').textContent = `Update to v${version}`;
+  $('update').hidden = false;
+}, () => {}); // e.g. a temporary install without update_url: just no button
+$('update').onclick = () => chrome.runtime.reload();
+
 chrome.storage.local.get(['apps', 'hidden', 'order'], ({ apps = [], hidden = [], order = [] }) => {
   if (!apps.length) return;
   $('empty').textContent = 'Click to hide or show. Drag to reorder.';

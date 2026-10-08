@@ -1,16 +1,25 @@
 <!doctype html>
 <!-- Open in a browser (or: chrome --headless --dump-dom file://.../test/popup.html), expect "PASS". -->
 <meta charset="utf-8">
-<header><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button></header>
+<header><span id="version"></span><span id="count"></span><button id="reset" hidden>Reset order</button><button id="all" hidden>Show all</button><button id="update" hidden></button></header>
 <div id="grid"></div>
 <p id="empty"></p>
 <pre id="out"></pre>
 <script>
   const store = { apps: [['a', 'A'], ['b', 'B'], ['c', 'C']], hidden: ['b'], order: ['c'] };
-  window.chrome = { storage: { local: {
-    get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in store).map(k => [k, store[k]]))),
-    set: o => Object.assign(store, structuredClone(o)),
-  } } };
+  let reloaded = false;
+  window.chrome = {
+    storage: { local: {
+      get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in store).map(k => [k, store[k]]))),
+      set: o => Object.assign(store, structuredClone(o)),
+    } },
+    runtime: {
+      getManifest: () => ({ version: '2.5' }),
+      requestUpdateCheck: async () => ({ status: 'update_available', version: '2.6' }),
+      onUpdateAvailable: { addListener() {} },
+      reload: () => (reloaded = true),
+    },
+  };
 </script>
 <script src="../src/popup.js"></script>
 <script>
@@ -40,5 +49,11 @@
   reset.click();
   check('reset order', [ids(), store.order], [['a', 'b', 'c'], []]);
 
-  out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
+  check('version shown', version.textContent, 'v2.5');
+  setTimeout(() => { // after the update check resolves
+    check('update offered', [update.hidden, update.textContent], [false, 'Update to v2.6']);
+    update.click();
+    check('update applies', reloaded, true);
+    out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
+  });
 </script>
