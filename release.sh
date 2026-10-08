@@ -12,15 +12,15 @@ case "$1" in
     echo "built ../odoo-hide-$v.zip" ;;
   publish)
     [ -f "$2" ] || { echo "usage: ./release.sh publish path/to/signed.xpi"; exit 1; }
-    tmp=$(mktemp -d); cp "$2" "$tmp/odoo-hide-$v.xpi"
-    gh release create "v$v" "$tmp/odoo-hide-$v.xpi" --title "v$v" --notes "Signed Firefox/Zen build"
+    tmp=$(mktemp -d); cp "$2" "$tmp/odoo-hide.xpi"
+    gh release create "v$v" "$tmp/odoo-hide.xpi" --title "v$v" --notes "Signed Firefox/Zen build"
     python3 - "$v" <<'PY'
 import json, sys
 v = sys.argv[1]
 d = json.load(open('updates.json'))
 d['addons']['odoo-hide@digisoolut.co']['updates'].append({
     'version': v,
-    'update_link': f'https://github.com/pyvnoaim/odoo-hide/releases/download/v{v}/odoo-hide-{v}.xpi'})
+    'update_link': f'https://github.com/pyvnoaim/odoo-hide/releases/download/v{v}/odoo-hide.xpi'})
 json.dump(d, open('updates.json', 'w'), indent=2)
 PY
     git add updates.json && git commit -qm "Release v$v" && git push -q
