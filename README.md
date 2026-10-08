@@ -18,6 +18,8 @@ Works on `datadiorama.digisoolut.co` and `servicedesk.datadiorama.com`. Your cho
 
 ## Release (maintainer)
 
-1. Bump `"version"` in `src/manifest.json`, run `./release.sh build`.
-2. Upload the zip at addons.mozilla.org (Upload a New Version), install the signed build.
-3. `./release.sh publish <signed .xpi>`
+One-time: create API credentials at [addons.mozilla.org/developers/addon/api/key](https://addons.mozilla.org/developers/addon/api/key/) and export them as `WEB_EXT_API_KEY` / `WEB_EXT_API_SECRET`.
+
+`./release.sh ship 2.6` bumps the version, gets it signed by Mozilla, creates the GitHub release and updates `updates.json`. Installed copies update within a day.
+
+Manual fallback: `./release.sh build`, upload the zip at addons.mozilla.org, then `./release.sh publish <signed .xpi>`.

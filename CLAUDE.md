@@ -2,7 +2,7 @@
 
 Firefox/Zen extension (MV3, no build step, no dependencies) that hides and reorders Odoo home-screen app tiles.
 
-- `src/` is the shipped extension; `release.sh build` zips it (minus `icon.svg`, the source art for `icon.png`).
+- `src/` is the shipped extension. Release: `./release.sh ship [version]` (signs via the AMO API, unlisted channel); `build` zips it (minus `icon.svg`, the source art for `icon.png`).
 - `content.js` injects one `<style>` (hide = `display:none`, reorder = CSS `order`), caches the app list into
   `chrome.storage.local.apps` for the popup, and takes over arrow/Enter navigation while anything is hidden or reordered.
 - `popup.js` edits `hidden` and `order` (lists of `data-menu-xmlid`s) in `chrome.storage.local`.
