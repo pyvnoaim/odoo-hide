@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Odoo Hide Apps",
-  "version": "2.5",
+  "version": "2.6",
   "description": "Pick which Odoo apps show on the home screen.",
   "icons": { "128": "icon.png" },
   "browser_specific_settings": {
