@@ -14,15 +14,14 @@
 <pre id="out"></pre>
 <script>
   onerror = m => { out.textContent = 'FAIL\n' + m; }; // a crash is a failure, not a blank result
-  const store = { hidden: ['b'], order: ['d', 'c'] };
+  // Settings saved by a pre-2.8 version: only in local, sync still empty
+  const store = { hidden: ['b'], order: ['d', 'c'] }, synced = {};
   const listeners = [];
-  window.chrome = { storage: {
-    local: {
-      get: (keys, cb) => cb(Object.fromEntries([keys].flat().filter(k => k in store).map(k => [k, store[k]]))),
-      set: (o, cb) => { Object.assign(store, o); listeners.forEach(l => l(Object.fromEntries(Object.keys(o).map(k => [k, { newValue: o[k] }])))); cb?.(); },
-    },
-    onChanged: { addListener: l => listeners.push(l) },
-  } };
+  const area = (data, name) => ({
+    get: (keys, cb) => cb(Object.fromEntries([keys].flat().filter(k => k in data).map(k => [k, data[k]]))),
+    set: (o, cb) => { Object.assign(data, o); listeners.forEach(l => l(Object.fromEntries(Object.keys(o).map(k => [k, { newValue: o[k] }])), name)); cb?.(); },
+  });
+  window.chrome = { storage: { local: area(store, 'local'), sync: area(synced, 'sync'), onChanged: { addListener: l => listeners.push(l) } } };
 </script>
 <script src="../src/nav.js"></script>
 <script>
@@ -53,8 +52,8 @@ function run() {
   key('ArrowRight');
   check('arrow right', document.activeElement.dataset.menuXmlid, 'd');
 
-  // Storage changes re-apply live
-  chrome.storage.local.set({ hidden: [], order: [] });
+  // Sync changes re-apply live and win over the old local settings
+  chrome.storage.sync.set({ hidden: [], order: [] });
   check('reset', seen(flat), ['a', 'b', 'c', 'd']);
 
   out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';

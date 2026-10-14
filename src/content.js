@@ -14,9 +14,10 @@ function apply({ hidden = [], order = [] }) {
     order.map((id, i) => `:is(${tile(id)}){order:${i + 1}}`).join('');
 }
 
-const load = () => chrome.storage.local.get(['hidden', 'order'], apply);
+// hidden/order sync across devices since v2.8; until the popup first saves there, use what older versions kept locally
+const load = () => chrome.storage.sync.get(['hidden', 'order'], s => s.hidden ? apply(s) : chrome.storage.local.get(['hidden', 'order'], apply));
 load();
-chrome.storage.onChanged.addListener(c => (c.hidden || c.order) && load());
+chrome.storage.onChanged.addListener((c, area) => area === 'sync' && (c.hidden || c.order) && load());
 
 // Remember the app list for the popup (hidden tiles stay in the DOM, so the list stays complete).
 // Read once now too: after an install/update the script lands in already-open tabs, where nothing mutates.

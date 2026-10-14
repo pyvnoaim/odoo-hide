@@ -2,6 +2,7 @@ const $ = id => document.getElementById(id);
 
 // Firefox only checks updates.json about once a day and has no runtime.requestUpdateCheck, so the popup
 // looks itself and links the newer signed build; opening that .xpi in Firefox installs the update.
+// In Chrome runtime.id is not the gecko id, so the lookup throws and no notice shows.
 const current = chrome.runtime.getManifest().version;
 $('version').textContent = 'v' + current;
 fetch('https://raw.githubusercontent.com/pyvnoaim/odoo-hide/main/updates.json')
@@ -15,14 +16,17 @@ fetch('https://raw.githubusercontent.com/pyvnoaim/odoo-hide/main/updates.json')
   })
   .catch(() => {}); // offline: no notice
 
-chrome.storage.local.get(['apps', 'hidden', 'order'], ({ apps = [], hidden = [], order = [] }) => {
+// hidden/order: sync, or what older versions kept locally (moved to sync by the first change)
+chrome.storage.local.get(['apps', 'hidden', 'order'], local => chrome.storage.sync.get(['hidden', 'order'], sync => {
+  const { apps = [] } = local;
+  let { hidden = [], order = [] } = sync.hidden ? sync : local;
   if (!apps.length) return;
   $('empty').textContent = 'Click to hide or show. Drag to reorder.';
   const odooOrder = apps.map(a => a[0]);
   apps.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])); // like content.js: apps not in `order` (new ones) first
 
-  const save = () => {
-    chrome.storage.local.set({ hidden, order });
+  const save = (write = true) => {
+    if (write) chrome.storage.sync.set({ hidden, order });
     $('count').textContent = hidden.length ? `${hidden.length} hidden` : '';
     $('all').hidden = !hidden.length;
     $('reset').hidden = !order.length;
@@ -78,12 +82,18 @@ chrome.storage.local.get(['apps', 'hidden', 'order'], ({ apps = [], hidden = [],
     };
   }
 
-  $('all').onclick = () => tiles.forEach(t => t.classList.contains('off') && t.click());
+  $('all').onclick = () => { // one sync write, not one per tile (sync has a write quota)
+    tiles.forEach(t => { t.classList.remove('off'); t.ariaPressed = 'true'; });
+    hidden = [];
+    save();
+  };
   $('reset').onclick = () => {
     order = [];
     odooOrder.forEach(id => $('grid').append(tiles.get(id)));
     save();
   };
 
-  save();
-});
+  // Only show the counts on open: writing here could upload a new device's empty settings
+  // over the real ones before its first sync has arrived.
+  save(false);
+}));

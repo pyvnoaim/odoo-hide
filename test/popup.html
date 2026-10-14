@@ -7,13 +7,15 @@
 <pre id="out"></pre>
 <script>
   onerror = m => { out.textContent = 'FAIL\n' + m; }; // a crash is a failure, not a blank result
-  const store = { apps: [['a', 'A'], ['b', 'B'], ['c', 'C']], hidden: ['b'], order: ['c'] };
+  // Settings saved by a pre-2.8 version: only in local; the popup's first change moves them to sync
+  const local = { apps: [['a', 'A'], ['b', 'B'], ['c', 'C']], hidden: ['b'], order: ['c'] }, store = {};
+  const area = data => ({
+    get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in data).map(k => [k, data[k]]))),
+    set: o => Object.assign(data, structuredClone(o)),
+  });
   // Only what Firefox really has: no runtime.requestUpdateCheck (calling it broke the 2.5 popup)
   window.chrome = {
-    storage: { local: {
-      get: (keys, cb) => cb(Object.fromEntries(keys.filter(k => k in store).map(k => [k, store[k]]))),
-      set: o => Object.assign(store, structuredClone(o)),
-    } },
+    storage: { local: area(local), sync: area(store) },
     runtime: { id: 'odoo-hide@digisoolut.co', getManifest: () => ({ version: '2.9' }) },
   };
   // updates.json with a newer version; numeric compare, so 2.10 > 2.9
@@ -29,9 +31,10 @@
 
   check('initial order (unordered first, like content.js)', ids(), ['a', 'b', 'c']);
   check('hidden marked', tile('b').ariaPressed, 'false');
+  check('opening writes nothing to sync', store, {});
 
   tile('a').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-  check('Enter hides', store.hidden, ['b', 'a']);
+  check('Enter hides, old local settings carried into sync', [store.hidden, store.order], [['b', 'a'], ['c']]);
   tile('a').dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
   check('Space shows', store.hidden, ['b']);
 
@@ -43,8 +46,9 @@
   drag('dragend', tile('c'));
   check('drag reorders', store.order, ['c', 'a', 'b']);
 
+  tile('a').click();
   all.click();
-  check('show all', store.hidden, []);
+  check('show all', [store.hidden, grid.querySelectorAll('.off').length, tile('a').ariaPressed], [[], 0, 'true']);
   reset.click();
   check('reset order', [ids(), store.order], [['a', 'b', 'c'], []]);
 

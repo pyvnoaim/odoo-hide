@@ -1,5 +1,5 @@
 #!/bin/sh
-# ./release.sh ship [version]     -> bump (optional), sign at addons.mozilla.org, GitHub release + updates.json, push
+# ./release.sh ship [version]     -> bump (optional), sign at addons.mozilla.org, GitHub release (+ Chrome zip) + updates.json, push
 #                                    needs WEB_EXT_API_KEY / WEB_EXT_API_SECRET in .env (addons.mozilla.org/developers/addon/api/key/)
 # ./release.sh build              -> ../odoo-hide-<version>.zip, for a manual upload to addons.mozilla.org (and Chrome)
 # ./release.sh publish <signed>   -> GitHub release + updates.json entry for an .xpi signed by hand
@@ -11,7 +11,8 @@ v=$(version)
 
 publish() {
   tmp=$(mktemp -d); cp "$1" "$tmp/odoo-hide.xpi"
-  gh release create "v$v" "$tmp/odoo-hide.xpi" --title "v$v" --notes "Signed Firefox/Zen build"
+  (cd src && zip -qr "$tmp/odoo-hide-chrome.zip" . -x '.*' icon.svg) # Chrome: unzip + Load unpacked
+  gh release create "v$v" "$tmp/odoo-hide.xpi" "$tmp/odoo-hide-chrome.zip" --title "v$v" --notes "Signed Firefox/Zen build; Chrome zip for Load unpacked"
   python3 - "$v" <<'PY'
 import json, sys
 v = sys.argv[1]

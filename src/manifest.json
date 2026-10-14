@@ -13,5 +13,5 @@
   },
   "permissions": ["storage"],
   "action": { "default_title": "Odoo apps", "default_popup": "popup.html" },
-  "content_scripts": [{ "matches": ["https://datadiorama.digisoolut.co/*", "https://servicedesk.datadiorama.com/*"], "js": ["nav.js", "content.js"] }]
+  "content_scripts": [{ "matches": ["https://datadiorama.digisoolut.co/*", "https://servicedesk.datadiorama.com/*"], "js": ["nav.js", "content.js"], "run_at": "document_start" }]
 }
