@@ -1,7 +1,8 @@
 const $ = id => document.getElementById(id);
 
 // Firefox only checks updates.json about once a day and has no runtime.requestUpdateCheck, so the popup
-// looks itself and links the newer signed build; opening that .xpi in Firefox installs the update.
+// looks itself and links the newer release's page. Not the .xpi itself: an install started from the popup
+// (moz-extension origin) is blocked outright, while clicking the .xpi on github.com gets the normal Allow prompt.
 // In Chrome runtime.id is not the gecko id, so the lookup throws and no notice shows.
 const current = chrome.runtime.getManifest().version;
 $('version').textContent = 'v' + current;
@@ -11,7 +12,7 @@ fetch('https://raw.githubusercontent.com/pyvnoaim/odoo-hide/main/updates.json')
     const latest = d.addons[chrome.runtime.id].updates.at(-1);
     if (latest.version.localeCompare(current, undefined, { numeric: true }) <= 0) return;
     $('update').textContent = `Update to v${latest.version}`;
-    $('update').href = latest.update_link;
+    $('update').href = `https://github.com/pyvnoaim/odoo-hide/releases/tag/v${latest.version}`;
     $('update').hidden = false;
   })
   .catch(() => {}); // offline: no notice

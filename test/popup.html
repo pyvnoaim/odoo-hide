@@ -54,7 +54,7 @@
 
   check('version shown', version.textContent, 'v2.9');
   setTimeout(() => { // after the updates.json fetch resolves
-    check('update offered', [update.hidden, update.textContent, update.href], [false, 'Update to v2.10', 'https://x/v2.10.xpi']);
+    check('update offered', [update.hidden, update.textContent, update.href], [false, 'Update to v2.10', 'https://github.com/pyvnoaim/odoo-hide/releases/tag/v2.10']);
     out.textContent = fails.length ? 'FAIL\n' + fails.join('\n') : 'PASS';
   });
 </script>
